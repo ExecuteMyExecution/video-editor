@@ -78,7 +78,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-dialog :visible.sync="dialogVisible" width="40%">
+      <el-dialog :visible.sync="dialogVisible" width="35%">
         <img width="100%" :src="dialogImageUrl" alt="">
       </el-dialog>
     </div>
@@ -86,16 +86,15 @@
 </template>
 
 <script>
-import axios from 'axios';
 export default {
   data() {
     // 校验结束事件的函数
     const myValidate = (index) => {
       return (rule, val, cb) => {
         let time = 0;
-        if(index == 3) {
+        if (index == 3) {
           time = this.form.endTime;
-          if(time > 0 && time < val) {
+          if (time > 0 && time < val) {
             cb(new Error(rule.message));
           }
         }
@@ -115,7 +114,6 @@ export default {
       dialogImageUrl: '',
       disabled: false,
       form: {
-        index: -1,
         startTime: 0,
         endTime: 0,
         position: '0,0',
@@ -148,10 +146,9 @@ export default {
           { required: true, message: '不能为空' }
         ]
       },
-      tableIndex: 1,
+      editIndex: 0,
       tableData: [
         {
-          index: 0,
           startTime: null,
           endTime: null,
           position: null,
@@ -164,12 +161,18 @@ export default {
       imageParams: {} // 接收插入的图片参数
     }
   },
+  props: ['video'],
   methods: {
     // 添加操作
     handleAdd(index, row) {
       if (row.startTime == null && row.endTime == null) {
         this.modelType = 0;
         this.dialogFormVisible = true;
+        // 初始化
+        this.form.startTime = this.video.currentTime;
+        this.form.endTime = this.video.currentTime;
+        this.form.size = '200,200';
+        this.form.position = '0,0';
       }
     },
     // 编辑操作
@@ -178,10 +181,11 @@ export default {
       this.dialogFormVisible = true;
       // 需要对当前行数据进行深拷贝
       this.form = JSON.parse(JSON.stringify(row));
+      this.editIndex = index;
     },
     // 删除操作
     handleDelete(index, row) {
-      this.$confirm('是否删除这条贴图, 是否继续?', '提示', {
+      this.$confirm('是否删除这条贴图?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -204,19 +208,11 @@ export default {
           // 对数据的后续处理
           if (this.modelType == 0) {
             let caption = JSON.parse(JSON.stringify(this.form));
-            caption.index = this.tableIndex++;
             this.tableData.splice(this.tableData.length - 1, 0, caption);
           } else {
             // 深拷贝数据、编辑的字幕序号
-            let caption = JSON.parse(JSON.stringify(this.form)), index = 0;
-            for (const obj of this.tableData) {
-              if (obj.index == this.form.index) {
-                break;
-              } else {
-                index++;
-              }
-            }
-            this.tableData.splice(index, 1, caption);
+            let caption = JSON.parse(JSON.stringify(this.form));
+            this.tableData.splice(this.editIndex, 1, caption);
           }
           // 更新贴图
           this.updateCaption();
@@ -239,7 +235,7 @@ export default {
     // 更新贴图操作
     updateCaption() {
       // 将数据信息存储在表格中
-      this.cookie.setCookie({ images: this.tableData.slice() }, 1);
+      this.$cookie.setCookie({ images: this.tableData.slice() }, 1);
       // 告知父组件更新数据
       this.$emit('updateCaption', this.tableData.slice());
     },
@@ -276,7 +272,7 @@ export default {
       let formData = new FormData();
       formData.append('file', file.file);
       // 发送axios请求
-      axios({
+      this.$axios({
         method: 'post',
         url: 'https://yijuan.xyz:3001/upload',
         data: formData,
@@ -308,7 +304,7 @@ export default {
   },
   mounted() {
     // 每次挂载从cookie中读取缓存
-    let images = JSON.parse(this.cookie.getCookie('images'));
+    let images = JSON.parse(this.$cookie.getCookie('images'));
     if (images) {
       this.tableData = images.slice();
     }
@@ -335,11 +331,20 @@ export default {
 .box {
   height: 100%;
 
-  .el-dialog {
+  // ::v-deep .el-dialog {
+
+  ::v-deep .el-dialog {
+    background: #3B3B3B;
+
+    .el-dialog__title {
+      color: #fff;
+    }
+
+    .el-form-item__label {
+      color: #eff1f6bf;
+    }
+
     .el-form {
-      ::v-deep label {
-        color: #eff1f6bf;
-      }
 
       .el-form-item:nth-last-of-type(2) {
         .el-input {

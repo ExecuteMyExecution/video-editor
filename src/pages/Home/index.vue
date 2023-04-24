@@ -1,5 +1,6 @@
 <template>
   <div class="container" v-loading="loading" element-loading-text="文件上传中" element-loading-background="#4a4a4a">
+    <h1>在线视频编辑器beta</h1>
     <el-upload class="upload-demo" drag multiple action="https://yijuan.xyz:3001/upload" :http-request="upload"
       :before-upload="checkFile">
       <i class="el-icon-upload"></i>
@@ -10,15 +11,10 @@
 </template>
 
 <script>
-import axios from 'axios';
 export default {
   data() {
     return {
-      loading: false,
-      width: 0,
-      height: 0,
-      top: 0,
-      left: 0
+      loading: false
     }
   },
   methods: {
@@ -40,7 +36,7 @@ export default {
       let formData = new FormData();
       formData.append('file', file.file);
       // 发送axios请求
-      axios({
+      this.$axios({
         method: 'post',
         url: 'https://yijuan.xyz:3001/upload',
         data: formData,
@@ -53,9 +49,10 @@ export default {
             duration: 1000
           });
         }
-        // 设置视频地址cookie
-        this.cookie.setCookie({
+        this.$cookie.setCookie({
+          // 设置视频地址cookie
           url: res.data.url,
+          // 设置字幕起始第一栏
           captions: [
             {
               index: 0,
@@ -67,6 +64,7 @@ export default {
               content: null
             },
           ],
+          // 设置贴图起始第一栏
           images: [
             {
               index: 0,
@@ -79,8 +77,8 @@ export default {
             },
           ]
         }, 1);
-        // this.cookie.setCookie()
         this.$router.push({ path: '/editor' });
+        this.loading = false;
       }).catch(err => {
         // 上传成功隐藏loading
         this.loading = false;
@@ -101,8 +99,13 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  // background-color: #4a4a4a;
 
+  h1 {
+    position: absolute;
+    color: #fff;
+    top: 10%;
+    left: 15%;
+  }
   ::v-deep .el-upload {
     .el-upload-dragger {
       background-color: #373737;

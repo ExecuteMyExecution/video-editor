@@ -89,7 +89,6 @@ export default {
     return {
       dialogFormVisible: false,
       form: {
-        index: -1,
         startTime: 0,
         endTime: 0,
         position: '0,0',
@@ -122,10 +121,9 @@ export default {
           { required: true, message: '不能为空' }
         ]
       },
-      tableIndex: 1,
+      editIndex: 0,
       tableData: [
         {
-          index: 0,
           startTime: null,
           endTime: null,
           position: null,
@@ -147,6 +145,9 @@ export default {
         this.dialogFormVisible = true;
         this.form.startTime = this.video.currentTime;
         this.form.endTime = this.video.currentTime;
+        this.form.content = '';
+        this.form.fontColor = '#000';
+        this.form.fontSize = '16px';
       }
     },
     // 编辑操作
@@ -155,6 +156,7 @@ export default {
       this.dialogFormVisible = true;
       // 需要对当前行数据进行深拷贝
       this.form = JSON.parse(JSON.stringify(row));
+      this.editIndex = index;
     },
     // 删除操作
     handleDelete(index, row) {
@@ -180,19 +182,11 @@ export default {
           // 对数据的后续处理
           if (this.modelType == 0) {
             let caption = JSON.parse(JSON.stringify(this.form));
-            caption.index = this.tableIndex++;
             this.tableData.splice(this.tableData.length - 1, 0, caption);
           } else {
             // 深拷贝数据、编辑的字幕序号
-            let caption = JSON.parse(JSON.stringify(this.form)), index = 0;
-            for (const obj of this.tableData) {
-              if (obj.index == this.form.index) {
-                break;
-              } else {
-                index++;
-              }
-            }
-            this.tableData.splice(index, 1, caption);
+            let caption = JSON.parse(JSON.stringify(this.form));
+            this.tableData.splice(this.editIndex, 1, caption);
           }
           // 更新字幕
           this.updateCaption();
@@ -217,7 +211,7 @@ export default {
     // 更新字幕操作
     updateCaption() {
       // 将数据信息存储在表格中
-      this.cookie.setCookie({ captions: this.tableData.slice() }, 1);
+      this.$cookie.setCookie({ captions: this.tableData.slice() }, 1);
       // 告知父组件更新数据
       this.$emit('updateCaption', this.tableData.slice());
     },
@@ -234,7 +228,7 @@ export default {
   },
   mounted() {
     // 每次挂载从cookie中读取缓存
-    let captions = JSON.parse(this.cookie.getCookie('captions'));
+    let captions = JSON.parse(this.$cookie.getCookie('captions'));
     if (captions) {
       this.tableData = captions.slice();
     }
@@ -263,11 +257,18 @@ export default {
 .box {
   height: 100%;
 
-  .el-dialog {
+  ::v-deep .el-dialog {
+    background: #3B3B3B;
+
+    .el-dialog__title {
+      color: #fff;
+    }
+
+    .el-form-item__label {
+      color: #eff1f6bf;
+    }
+
     .el-form {
-      ::v-deep label {
-        color: #eff1f6bf;
-      }
 
       .el-input {
         ::v-deep .el-input__inner {
@@ -290,7 +291,7 @@ export default {
       }
 
       .el-color-picker {
-        ::v-deep .el-color-picker__trigger {
+        .el-color-picker__trigger {
           border: none;
         }
       }

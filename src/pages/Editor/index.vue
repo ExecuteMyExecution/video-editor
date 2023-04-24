@@ -16,7 +16,7 @@
     <div class="video-part">
       <div class="origin">
         <video ref="video" @play="play" @timeupdate="playing" width="100%" :src="videoSrc" controls="true" preload="auto"
-          @canplay="firstRender" :class="{ highlight: insertShow }" />
+          @loadeddata="firstRender" :class="{ highlight: insertShow }" />
       </div>
       <div class="edited">
         <input type="text" ref="insertInput" :style="`font-size: ${fontSize}; color: ${fontColor}`">
@@ -40,49 +40,8 @@
       </keep-alive>
     </div>
     <!-- 导出数据的弹出框 -->
-    <el-dialog title="数据接口" :visible.sync="dialogTableVisible" width="80%">
-      <div class="exportDialog">
-        <h3>字幕数据</h3>
-        <el-table :data="videoRelated.captions" header-row-class-name="my-header" row-class-name="my-row">
-          <el-table-column prop="startTime" label="起始时间" width="180">
-          </el-table-column>
-          <el-table-column prop="endTime" label="结束时间" width="180">
-          </el-table-column>
-          <el-table-column prop="position" label="位置" width="180">
-          </el-table-column>
-          <el-table-column prop="fontSize" label="字号" width="180">
-          </el-table-column>
-          <el-table-column prop="fontColor" label="颜色" width="180">
-          </el-table-column>
-          <el-table-column prop="content" label="内容">
-          </el-table-column>
-        </el-table>
-        <h3>贴图数据</h3>
-        <el-table :data="videoRelated.images" header-row-class-name="my-header" row-class-name="my-row">
-          <el-table-column prop="startTime" label="起始时间" width="180">
-          </el-table-column>
-          <el-table-column prop="endTime" label="结束时间" width="180">
-          </el-table-column>
-          <el-table-column prop="position" label="位置" width="180">
-          </el-table-column>
-          <el-table-column prop="size" label="大小" width="180">
-          </el-table-column>
-          <el-table-column prop="angle" label="角度" width="180">
-          </el-table-column>
-          <el-table-column label="内容">
-            <template slot-scope="scope">
-              <el-button type="mini" v-show="scope.row.content"
-                @click="handlePictureCardPreview(scope.row)">查看</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-dialog>
-    <!-- 预览图片展示 -->
-    <el-dialog :visible.sync="dialogVisible" width="40%">
-      <img width="100%" :src="dialogImageUrl" alt="">
-    </el-dialog>
-    <!-- 图片展示区 -->
+    <ExportTable :captions="videoRelated.captions" :images="videoRelated.images" />
+    <!-- 图片置放区（为了获取DOM对象） -->
     <div class="showImg">
       <img v-for="(img, index) in videoRelated.images" :key="index" :src="img.content" ref="img">
     </div>
@@ -92,6 +51,7 @@
 <script>
 import InsertCaption from '@/components/InsertCaption';
 import InsertImage from '@/components/InsertImage';
+import ExportTable from '@/components/ExportTable';
 import _ from 'lodash';
 export default {
   data() {
@@ -112,11 +72,8 @@ export default {
           // { index: 0, startTime: null, endTime: null, position: null, angle: null, size: null, content: null }
         ]
       },
-      dialogTableVisible: false,
-      dialogVisible: false,
-      dialogImageUrl: '',
-      insertShow: false,
-      cursorText: false,
+      insertShow: false,  // 高亮显示
+      cursorText: false,  // 文本光标
       fontColor: '#000',
       fontSize: '16px',
       currentUrl: '',
@@ -125,18 +82,18 @@ export default {
     }
   },
   components: {
-    InsertCaption, InsertImage
+    InsertCaption, InsertImage, ExportTable
   },
   mounted() {
     // 初始化数据
-    this.videoSrc = this.cookie.getCookie('url');
+    this.videoSrc = this.$cookie.getCookie('url');
     this.videoRelated.video = this.$refs.video;
     this.videoRelated.c1 = this.$refs.c1;
     this.videoRelated.ctx1 = this.$refs.c1.getContext('2d');
 
     // 从缓存中读取数据
-    let captions = JSON.parse(this.cookie.getCookie('captions')).slice();
-    let images = JSON.parse(this.cookie.getCookie('images')).slice();
+    let captions = JSON.parse(this.$cookie.getCookie('captions')).slice();
+    let images = JSON.parse(this.$cookie.getCookie('images')).slice();
     if (captions) {
       captions.pop();
       this.videoRelated.captions = captions;
@@ -165,6 +122,7 @@ export default {
       this.$refs.canvasContainer.style.height = 400 + 'px';
       this.$refs.canvasContainer.style.width = ratio * 400 + 'px';
       // 将每个imgDOM加入到images数组中
+      // console.log(this.videoRelated.images);
       for (let i = 0; i < this.videoRelated.images.length; ++i) {
         this.videoRelated.images[i].ref = this.$refs.img[i];
       }
@@ -216,41 +174,28 @@ export default {
         }
       }
     },
-    // 视频编辑操作函数
+    // 菜单操作函数
     operation(index) {
       switch (index) {
-        case 1: this.addCation(); break;
-        case 2: this.addImage(); break;
-        case 3: this.export(); break;
-        default: this.$router.push({ path: '/home' });
+        // 返回主页
+        case 0: this.$router.push({ path: '/home' }); break;
+        // 添加字幕
+        case 1: this.$router.push({ path: '/editor/caption' }); break;
+        // 添加贴图
+        case 2: this.$router.push({ path: '/editor/image' }); break;
+        // 导出视频
+        case 3: this.$bus.$emit('changeDialogTableVisible'); break;
       }
     },
-    // 添加字幕
-    addCation() {
-      this.$router.push({ path: '/editor/caption' });
-    },
-    // 添加贴图
-    addImage() {
-      this.$router.push({ path: '/editor/image' });
-    },
-    // 导出视频
-    export() {
-      this.dialogTableVisible = true;
-    },
-    // 查看预览图片
-    handlePictureCardPreview(row) {
-      this.dialogImageUrl = row.content;
-      this.dialogVisible = true;
-    },
     // 自定义的更新数组函数
-    updateCaption(caption) {
+    updateCaption(params) {
       // 判断是否为images
-      if (Object.keys(caption[0]).includes('angle')) {
-        caption.pop();
-        this.videoRelated.images = caption;
+      if (Object.keys(params[0]).includes('angle')) {
+        params.pop();  // 去除最后的空元素
+        this.videoRelated.images = params;
       } else {
-        caption.pop();
-        this.videoRelated.captions = caption;
+        params.pop();
+        this.videoRelated.captions = params;
       }
     },
     // 插入的设置操作
@@ -351,52 +296,6 @@ export default {
     }
   }
 
-  ::v-deep .el-dialog {
-    background: #3B3B3B;
-
-    .el-dialog__title {
-      color: #fff;
-    }
-  }
-
-  .exportDialog {
-    height: 60vh;
-    overflow: scroll;
-
-    h3 {
-      color: #f1a119;
-      margin: 0;
-      padding: 1em 10px;
-      border-bottom: 1px solid #fff;
-
-      &:first-child {
-        padding-top: 0;
-      }
-    }
-  }
-
-  .el-table {
-    color: #fff;
-    background-color: #3b3b3b;
-
-    ::v-deep .my-row {
-      background: #3b3b3b;
-    }
-
-    &::before {
-      height: 0;
-    }
-
-    ::v-deep .my-header th {
-      color: #fff;
-      background: #3b3b3b;
-    }
-
-    ::v-deep tbody tr:hover>td {
-      background-color: #616060;
-    }
-  }
-
   .el-menu {
     border: none;
     display: flex;
@@ -420,7 +319,6 @@ export default {
 
     .edited {
       flex: 1;
-      // position: relative;
       overflow: hidden;
 
       input {
@@ -430,7 +328,6 @@ export default {
         border: none;
         outline: none;
         visibility: hidden;
-        // width: 10px;
       }
 
       .canvasContainer {
