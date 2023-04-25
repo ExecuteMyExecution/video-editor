@@ -38,6 +38,8 @@ https://executemyexecution.github.io/
 
 顶部按钮从左至右依次是：字体颜色，字号大小，设置起始、结束时间（可拖动左侧视频选择时间）
 
+(现在字幕增加了一个样式按钮，可以设置斜体和粗体）
+
 点击“确认”后可以看到底部有了记录，展示区也插入了字幕
 
 ![image](https://yijuan.xyz//test/GitHubPicture/c3.png)
