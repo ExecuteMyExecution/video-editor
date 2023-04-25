@@ -19,7 +19,9 @@
           @loadeddata="firstRender" :class="{ highlight: insertShow }" />
       </div>
       <div class="edited">
-        <input type="text" ref="insertInput" :style="`font-size: ${fontSize}; color: ${fontColor}`">
+        <input type="text" ref="insertInput"
+          :class="{ italic: fontRelated.fontStyle.italic, bold: fontRelated.fontStyle.bold }"
+          :style="`font-size: ${fontRelated.fontSize}; color: ${fontRelated.fontColor};`">
         <div class="canvasContainer" ref="canvasContainer">
           <vue-drag-resize :isActive="true" :w="200" :h="200" ref="dragImg" :x="0" :y="0"
             :style="`display: ${showDragImg}; transform: rotate(${rotateAngle}deg);`" @resizing="resize"
@@ -74,8 +76,14 @@ export default {
       },
       insertShow: false,  // 高亮显示
       cursorText: false,  // 文本光标
-      fontColor: '#000',
-      fontSize: '16px',
+      fontRelated: {
+        fontColor: '#000',
+        fontSize: '16px',
+        fontStyle: {
+          italic: false,
+          bold: false
+        }
+      },
       currentUrl: '',
       showDragImg: 'none',
       rotateAngle: 0
@@ -165,9 +173,12 @@ export default {
         }
       }
       // 渲染文字
-      for (const { startTime, endTime, content, position, fontSize, fontColor } of this.videoRelated.captions) {
+      for (const { startTime, endTime, content, position, fontSize, fontColor, fontStyle } of this.videoRelated.captions) {
         if (curTime >= startTime && curTime < endTime) {
-          this.videoRelated.ctx1.font = `${fontSize} serif`;  // 设置字体
+          let font = `${fontSize} serif`;
+          if(fontStyle.italic) font = 'italic ' + font;
+          if(fontStyle.bold) font = 'bold ' + font;
+          this.videoRelated.ctx1.font = font;  // 设置字体
           this.videoRelated.ctx1.fillStyle = fontColor; // 设置颜色
           // 绘制文字
           this.videoRelated.ctx1.fillText(content, position.split(',')[0], position.split(',')[1]);
@@ -245,17 +256,27 @@ export default {
   created() {
     // 改变字体颜色
     this.$bus.$on('changeFontColor', fontColor => {
-      this.fontColor = fontColor;
+      this.fontRelated.fontColor = fontColor;
     })
     // 改变字体大小
     this.$bus.$on('changeFontSize', fontSize => {
-      this.fontSize = fontSize;
+      this.fontRelated.fontSize = fontSize;
+    })
+    // 改变字体样式
+    this.$bus.$on('changeFontStyle', (index, val) => {
+      switch (index) {
+        case 1: this.fontRelated.fontStyle.italic = !val; break;
+        case 2: this.fontRelated.fontStyle.bold = !val; break;
+      }
     })
     // 取消highlight的class
     this.$bus.$on('cancelHighlight', () => {
       this.insertShow = false;
       this.cursorText = false;
       this.showDragImg = 'none';
+      // 字体设置
+      this.fontRelated.fontStyle.italic = false;
+      this.fontRelated.fontStyle.bold = false;
     })
     // 改变旋转角度
     this.$bus.$on('changeAngle', angle => {
@@ -271,6 +292,16 @@ export default {
   background-color: black;
   display: flex;
   flex-direction: column;
+
+  // 字体样式属性
+  .italic {
+    font-style: italic;
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
 
   // 高亮的canvas属性
   .highlight {

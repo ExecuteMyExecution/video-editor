@@ -52,15 +52,15 @@
     <div class="content">
       <el-table :data="tableData" style="width: 100%" height="100%" row-class-name="my-row"
         header-row-class-name="my-header">
-        <el-table-column prop="startTime" label="起始时间" width="180">
+        <el-table-column prop="startTime" label="起始时间">
         </el-table-column>
-        <el-table-column prop="endTime" label="结束时间" width="180">
+        <el-table-column prop="endTime" label="结束时间">
         </el-table-column>
-        <el-table-column prop="position" label="位置" width="180">
+        <el-table-column prop="position" label="位置">
         </el-table-column>
-        <el-table-column prop="size" label="大小" width="180">
+        <el-table-column prop="size" label="大小">
         </el-table-column>
-        <el-table-column prop="angle" label="角度" width="180">
+        <el-table-column prop="angle" label="角度">
         </el-table-column>
         <el-table-column label="内容">
           <template slot-scope="scope">
@@ -173,6 +173,10 @@ export default {
         this.form.endTime = this.video.currentTime;
         this.form.size = '200,200';
         this.form.position = '0,0';
+        // 删除图片的预览位置
+        if (this.$refs.upload) {
+          this.handleRemove();
+        }
       }
     },
     // 编辑操作
@@ -182,6 +186,10 @@ export default {
       // 需要对当前行数据进行深拷贝
       this.form = JSON.parse(JSON.stringify(row));
       this.editIndex = index;
+      // 删除图片的预览位置
+      if (this.$refs.upload) {
+        this.handleRemove();
+      }
     },
     // 删除操作
     handleDelete(index, row) {

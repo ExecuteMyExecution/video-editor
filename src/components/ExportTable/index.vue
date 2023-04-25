@@ -5,30 +5,32 @@
             <div class="exportDialog">
                 <h3>字幕数据</h3>
                 <el-table :data="captions" header-row-class-name="my-header" row-class-name="my-row">
-                    <el-table-column prop="startTime" label="起始时间" width="180">
+                    <el-table-column prop="startTime" label="起始时间" >
                     </el-table-column>
-                    <el-table-column prop="endTime" label="结束时间" width="180">
+                    <el-table-column prop="endTime" label="结束时间" >
                     </el-table-column>
-                    <el-table-column prop="position" label="位置" width="180">
+                    <el-table-column prop="position" label="位置" >
                     </el-table-column>
-                    <el-table-column prop="fontSize" label="字号" width="180">
+                    <el-table-column prop="fontSize" label="字号" >
                     </el-table-column>
-                    <el-table-column prop="fontColor" label="颜色" width="180">
+                    <el-table-column prop="fontColor" label="颜色" >
                     </el-table-column>
                     <el-table-column prop="content" label="内容">
+                    </el-table-column>
+                    <el-table-column prop="fontStyle.content" label="样式">
                     </el-table-column>
                 </el-table>
                 <h3>贴图数据</h3>
                 <el-table :data="images" header-row-class-name="my-header" row-class-name="my-row">
-                    <el-table-column prop="startTime" label="起始时间" width="180">
+                    <el-table-column prop="startTime" label="起始时间">
                     </el-table-column>
-                    <el-table-column prop="endTime" label="结束时间" width="180">
+                    <el-table-column prop="endTime" label="结束时间">
                     </el-table-column>
-                    <el-table-column prop="position" label="位置" width="180">
+                    <el-table-column prop="position" label="位置">
                     </el-table-column>
-                    <el-table-column prop="size" label="大小" width="180">
+                    <el-table-column prop="size" label="大小">
                     </el-table-column>
-                    <el-table-column prop="angle" label="角度" width="180">
+                    <el-table-column prop="angle" label="角度">
                     </el-table-column>
                     <el-table-column label="内容">
                         <template slot-scope="scope">

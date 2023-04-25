@@ -8,9 +8,21 @@
             <el-option v-for="item in 90" :key="item" :label="`${item}px`" :value="`${item}px`">
             </el-option>
         </el-select>
+        <!-- 设置样式 -->
+        <el-dropdown @command="handleCommandStyle" :hide-on-click="false">
+            <el-button type="info">
+                设置样式<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="italic"><el-checkbox
+                        v-model="textParams.fontStyle.italic">斜体</el-checkbox></el-dropdown-item>
+                <el-dropdown-item command="bold"><el-checkbox
+                        v-model="textParams.fontStyle.bold">粗体</el-checkbox></el-dropdown-item>
+            </el-dropdown-menu>
+        </el-dropdown>
         <!-- 设置时间 -->
-        <el-dropdown @command="handleCommand">
-            <el-button type="primary">
+        <el-dropdown @command="handleCommandTime">
+            <el-button type="success">
                 设置时间<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
@@ -34,7 +46,11 @@ export default {
                 startTime: -1,
                 endTime: -1,
                 fontSize: '16px',
-                fontColor: '#000'
+                fontColor: '#000',
+                fontStyle: {
+                    italic: false,
+                    bold: false,
+                }
             }
         }
     },
@@ -46,16 +62,20 @@ export default {
             this.$bus.$emit('shiftModalShow');
             this.$bus.$emit('cancelHighlight');
             this.input.style.visibility = 'hidden';
+            this.$bus.$emit('resetInsertCaption');
         },
         // 确认插入
         sureInsert() {
             // 设置文本内容
             this.textParams.text = this.input.value;
-            this.cancelInsert();
+            this.insertShow = false;
+            this.$bus.$emit('shiftModalShow');
+            this.$bus.$emit('cancelHighlight');
+            this.input.style.visibility = 'hidden';
             this.$bus.$emit('insertCaption', JSON.parse(JSON.stringify(this.textParams)));
         },
         // 设置开始、结束时间
-        handleCommand(command) {
+        handleCommandTime(command) {
             if (command == 'end') {
                 if (this.video.currentTime >= this.textParams.startTime) {
                     this.textParams.endTime = this.video.currentTime;
@@ -83,6 +103,13 @@ export default {
                     });
                 }
             }
+        },
+        // 设置字体样式
+        handleCommandStyle(command) {
+            switch (command) {
+                case 'italic': this.$bus.$emit('changeFontStyle', 1, this.textParams.fontStyle.italic); break;
+                case 'bold': this.$bus.$emit('changeFontStyle', 2, this.textParams.fontStyle.bold); break;
+            }
         }
     },
     created() {
@@ -100,6 +127,10 @@ export default {
             this.textParams.text = '';
             this.textParams.startTime = -1;
             this.textParams.endTime = -1;
+            this.textParams.fontStyle = {
+                italic: false,
+                bold: false,
+            }
         })
     },
     computed: {
@@ -111,10 +142,10 @@ export default {
     watch: {
         textParams1: {
             handler(newVal, oldVal) {
-                if(newVal.fontSize != oldVal.fontSize) {
+                if (newVal.fontSize != oldVal.fontSize) {
                     this.$bus.$emit('changeFontSize', newVal.fontSize);
                 }
-                if(newVal.fontColor != oldVal.fontColor) {
+                if (newVal.fontColor != oldVal.fontColor) {
                     this.$bus.$emit('changeFontColor', newVal.fontColor);
                 }
             },
@@ -135,7 +166,6 @@ export default {
     line-height: 60px;
 
     .el-color-picker {
-        // padding-top: 20px;
         margin-right: 10px;
     }
 

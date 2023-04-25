@@ -2,7 +2,7 @@
   <div class="box">
     <!-- 编辑的表单 -->
     <el-dialog title="添加/编辑字幕" :visible.sync="dialogFormVisible" width="50%">
-      <el-form ref="form" :rules="rules" inline :model="form" label-width="80px">
+      <el-form ref="form" :rules="rules" inline :model="form" >
         <el-form-item label="起始时间" prop="startTime">
           <el-input v-model.number="form.startTime" placeholder="请输入起始时间"></el-input>
         </el-form-item>
@@ -17,6 +17,19 @@
         </el-form-item>
         <el-form-item label="字幕内容" prop="content">
           <el-input v-model="form.content" placeholder="请输入字幕内容"></el-input>
+        </el-form-item>
+        <el-form-item label="字体样式">
+          <el-dropdown :hide-on-click="false" @command="handleCommandStyle">
+            <el-button type="info">
+              设置样式<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="italic"><el-checkbox
+                  v-model="form.fontStyle.italic">斜体</el-checkbox></el-dropdown-item>
+              <el-dropdown-item command="bold"><el-checkbox
+                  v-model="form.fontStyle.bold">粗体</el-checkbox></el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-form-item>
         <el-form-item label="字体颜色" prop="fontColor">
           <div class="block">
@@ -36,17 +49,19 @@
     <div class="content">
       <el-table :data="tableData" style="width: 100%" height="100%" row-class-name="my-row"
         header-row-class-name="my-header">
-        <el-table-column prop="startTime" label="起始时间" width="180">
+        <el-table-column prop="startTime" label="起始时间">
         </el-table-column>
-        <el-table-column prop="endTime" label="结束时间" width="180">
+        <el-table-column prop="endTime" label="结束时间">
         </el-table-column>
-        <el-table-column prop="position" label="位置" width="180">
+        <el-table-column prop="position" label="位置">
         </el-table-column>
-        <el-table-column prop="fontSize" label="字号" width="180">
+        <el-table-column prop="fontSize" label="字号">
         </el-table-column>
-        <el-table-column prop="fontColor" label="颜色" width="180">
+        <el-table-column prop="fontColor" label="颜色">
         </el-table-column>
         <el-table-column prop="content" label="内容">
+        </el-table-column>
+        <el-table-column prop="fontStyle.content" label="样式">
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -94,7 +109,12 @@ export default {
         position: '0,0',
         fontSize: '16px',
         fontColor: '#000',
-        content: ''
+        content: '',
+        fontStyle: {
+          italic: false,
+          bold: false,
+          content: '无'
+        },
       },
       rules: {
         startTime: [
@@ -129,7 +149,12 @@ export default {
           position: null,
           fontColor: null,
           fontSize: null,
-          content: null
+          content: null,
+          fontStyle: {
+            italic: false,
+            bold: false,
+            content: ''
+          }
         },
       ],
       modelType: 0,    // 0表示新增，1表示编辑
@@ -148,6 +173,11 @@ export default {
         this.form.content = '';
         this.form.fontColor = '#000';
         this.form.fontSize = '16px';
+        this.form.fontStyle = {
+          italic: false,
+          bold: false,
+          content: '无'
+        }
       }
     },
     // 编辑操作
@@ -203,10 +233,10 @@ export default {
     handleClose() {
       this.$refs.form.resetFields();
       this.dialogFormVisible = false;
-      console.log(214);
     },
     cancel() {
       this.handleClose();
+      this.$bus.$emit('resetInsertCaption');
     },
     // 更新字幕操作
     updateCaption() {
@@ -219,6 +249,38 @@ export default {
     insert() {
       this.$emit('insert', 1);
       this.dialogFormVisible = false;
+    },
+    // 字体样式设置
+    handleCommandStyle(command) {
+      if (command == 'italic') {
+        if (this.form.fontStyle.italic == false) {
+          if (this.form.fontStyle.bold == false) {
+            this.form.fontStyle.content = '斜体';
+          } else {
+            this.form.fontStyle.content = '斜体 粗体';
+          }
+        } else {
+          if (this.form.fontStyle.bold == false) {
+            this.form.fontStyle.content = '无';
+          } else {
+            this.form.fontStyle.content = '粗体';
+          }
+        }
+      } else {
+        if (this.form.fontStyle.bold == false) {
+          if (this.form.fontStyle.italic == false) {
+            this.form.fontStyle.content = '粗体';
+          } else {
+            this.form.fontStyle.content = '斜体 粗体';
+          }
+        }else {
+          if (this.form.fontStyle.italic == false) {
+            this.form.fontStyle.content = '无';
+          } else {
+            this.form.fontStyle.content = '斜体';
+          }
+        }
+      }
     }
   },
   computed: {
@@ -236,6 +298,19 @@ export default {
   created() {
     // 插入文本参数改变函数
     this.$bus.$on('insertCaption', res => {
+      if(res.fontStyle.italic == true) {
+        if(res.fontStyle.bold == true) {
+          res.fontStyle.content = '斜体 粗体'
+        }else {
+          res.fontStyle.content = '斜体';
+        }
+      }else {
+        if(res.fontStyle.bold == true) {
+          res.fontStyle.content = '粗体'
+        }else {
+          res.fontStyle.content = '无';
+        }
+      }
       this.textParams = res;
     })
   },
@@ -245,6 +320,7 @@ export default {
       this.form.position = newVal.position;
       this.form.fontSize = newVal.fontSize;
       this.form.fontColor = newVal.fontColor;
+      this.form.fontStyle = newVal.fontStyle;
       if (newVal.startTime >= 0) this.form.startTime = newVal.startTime;
       if (newVal.endTime >= 0) this.form.endTime = newVal.endTime;
       this.dialogFormVisible = true;
