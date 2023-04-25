@@ -68,7 +68,9 @@ https://executemyexecution.github.io/
 
 ### 效果演示
 
-![image](https://yijuan.xyz//test/GitHubPicture/show.gif)
+![gif](https://yijuan.xyz//test/GitHubPicture/show.gif)
+
+gif加载不出来的话戳这：https://yijuan.xyz//test/GitHubPicture/show.gif
 
 ### 导出视频
 
