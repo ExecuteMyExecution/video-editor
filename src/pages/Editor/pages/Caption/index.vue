@@ -271,7 +271,7 @@ export default {
     .el-form {
 
       .el-input {
-        ::v-deep .el-input__inner {
+        .el-input__inner {
           background-color: #4a4a4a;
           color: #eff1f6bf;
           border: none;

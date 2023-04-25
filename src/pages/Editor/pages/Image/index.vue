@@ -331,8 +331,6 @@ export default {
 .box {
   height: 100%;
 
-  // ::v-deep .el-dialog {
-
   ::v-deep .el-dialog {
     background: #3B3B3B;
 
@@ -353,7 +351,7 @@ export default {
       }
 
       .el-input {
-        ::v-deep .el-input__inner {
+        .el-input__inner {
           background-color: #4a4a4a;
           color: #eff1f6bf;
           border: none;
@@ -368,7 +366,7 @@ export default {
         }
       }
 
-      ::v-deep .el-upload {
+      .el-upload {
         background-color: #4a4a4a;
       }
     }

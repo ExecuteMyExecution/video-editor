@@ -122,14 +122,14 @@ export default {
       this.$refs.canvasContainer.style.height = 400 + 'px';
       this.$refs.canvasContainer.style.width = ratio * 400 + 'px';
       // 将每个imgDOM加入到images数组中
-      // console.log(this.videoRelated.images);
-      for (let i = 0; i < this.videoRelated.images.length; ++i) {
-        this.videoRelated.images[i].ref = this.$refs.img[i];
-      }
+      this.$nextTick(() => {  // 先执行for循环载入节点，再进行加入
+        for (let i = 0; i < this.videoRelated.images.length; ++i) {
+          this.videoRelated.images[i].ref = this.$refs.img[i];
+        }
+      })
     },
     // 视频播放中的事件
     playing() {
-      // console.log(2123);
       if (this.videoRelated.video.currentTime != 0) {
         let count = 25, that = this;
         let timer = setInterval(function () {
@@ -193,6 +193,12 @@ export default {
       if (Object.keys(params[0]).includes('angle')) {
         params.pop();  // 去除最后的空元素
         this.videoRelated.images = params;
+        // 将每个imgDOM加入到images数组中
+        this.$nextTick(() => {  // 先执行for循环载入节点，再进行加入
+          for (let i = 0; i < this.videoRelated.images.length; ++i) {
+            this.videoRelated.images[i].ref = this.$refs.img[i];
+          }
+        })
       } else {
         params.pop();
         this.videoRelated.captions = params;
