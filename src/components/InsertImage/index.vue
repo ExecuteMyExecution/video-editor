@@ -10,7 +10,7 @@
         </el-popover>
         <!-- 设置时间 -->
         <el-dropdown @command="handleCommandTime">
-            <el-button type="primary">
+            <el-button type="success">
                 设置时间<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
