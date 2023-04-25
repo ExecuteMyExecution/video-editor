@@ -32,6 +32,8 @@ https://executemyexecution.github.io/
 - 字幕位置：形如'100,100'，分别是x和y参数
 - 字体大小：应带上单位
 
+(现在字幕增加了一个样式按钮，可以设置斜体和粗体）
+
 可以自己输入参数，也可以点击“选择插入”按钮，即可在展示区插入文本，效果如下
 
 ![image](https://yijuan.xyz//test/GitHubPicture/c2.png)
